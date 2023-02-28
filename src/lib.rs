@@ -83,6 +83,14 @@ impl<T> OptVec<T> {
         }
     }
 
+    pub fn iter(&self) -> Iter<T> {
+        self.into_iter()
+    }
+    pub fn iter_mut(&mut self) -> IterMut<T> {
+        self.into_iter()
+    }
+
+    
     pub fn for_each<F: FnMut(&T)>(&self, mut f: F) {
         match self {
             OptVec::None => {},
