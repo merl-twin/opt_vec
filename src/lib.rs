@@ -2,7 +2,7 @@ use std::{
     ops::{Index,IndexMut},
 };
 
-#[derive(Debug)]
+#[derive(Debug,Clone,PartialEq,Eq,PartialOrd,Ord,Hash)]
 pub enum OptVec<T> {
     None,
     One(T),
