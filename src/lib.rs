@@ -2,10 +2,12 @@ use std::{
     ops::{Index,IndexMut},
 };
 
+
 #[derive(Debug,Clone,PartialEq,Eq,PartialOrd,Ord,Hash)]
 pub enum OptVec<T> {
     None,
     One(T),
+    Two([T; 2]),
     Vec(Vec<T>),
 }
 impl<T> From<T> for OptVec<T> {
@@ -18,10 +20,42 @@ impl<T> From<Vec<T>> for OptVec<T> {
         match ts.len() {
             0 => OptVec::None,
             1 => OptVec::One(ts.pop().unwrap()), // safe
+            2 => {
+                let v2 = ts.pop().unwrap(); //safe
+                let v1 = ts.pop().unwrap(); // safe
+                OptVec::Two([v1, v2])
+            },
             _ => OptVec::Vec(ts),
         }
     }
 }
+
+impl<T> Extend<T> for OptVec<T> {
+    fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
+        let mut iter = iter.into_iter();
+        loop {
+            match self {
+                OptVec::Vec(v) => {
+                    v.extend(iter);
+                    break;
+                },
+                _ => match iter.next() {
+                    None => break,
+                    Some(t) => self.push(t),
+                },
+            }
+        }
+    }
+}
+
+impl<T> FromIterator<T> for OptVec<T> {
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> OptVec<T> {
+        let mut slf = OptVec::None;
+        slf.extend(iter);
+        slf
+    }
+}
+
 impl<T> Index<usize> for OptVec<T> {
     type Output = T;
 
@@ -44,21 +78,47 @@ impl<T> OptVec<T> {
         match self {
             OptVec::None => 0,
             OptVec::One(_) => 1,
+            OptVec::Two(_) => 2,
             OptVec::Vec(v) => v.len(),
         }
     }
     pub fn push(&mut self, el: T) {
         match self {
             OptVec::None => *self = OptVec::One(el),
-            OptVec::One(_) => {
+            OptVec::Vec(v) => v.push(el),
+            _ => {
                 let mut tmp = OptVec::None;
                 std::mem::swap(&mut tmp, self);
                 match tmp {
-                    OptVec::One(t) => *self = OptVec::Vec(vec![t,el]),
-                    _ => unreachable!(),
+                    OptVec::None |
+                    OptVec::Vec(_) => unreachable!(),
+                    OptVec::One(t) => *self = OptVec::Two([t,el]),
+                    OptVec::Two([t1,t2]) => *self = OptVec::Vec(vec![t1,t2,el]),
                 }
             },
-            OptVec::Vec(v) => v.push(el),
+            
+        }
+    }
+    pub fn pop(&mut self) -> Option<T> {
+        match self {
+            OptVec::None => None,
+            OptVec::Vec(v) => {
+                v.pop()
+            },
+            _ => {
+                let mut tmp = OptVec::None;
+                std::mem::swap(&mut tmp, self);
+                match tmp {
+                    OptVec::None |
+                    OptVec::Vec(_) => unreachable!(),
+                    OptVec::One(t) => Some(t),
+                    OptVec::Two([t1,t2]) => {
+                        *self = OptVec::One(t1);
+                        Some(t2)
+                    },
+                }
+            },
+            
         }
     }
 
@@ -69,6 +129,7 @@ impl<T> OptVec<T> {
                 true => Some(t),
                 false => None,
             },
+            OptVec::Two(s) => s.get(i),
             OptVec::Vec(v) => v.get(i),
         }
     }
@@ -79,6 +140,7 @@ impl<T> OptVec<T> {
                 true => Some(t),
                 false => None,
             },
+            OptVec::Two(s) => s.get_mut(i),
             OptVec::Vec(v) => v.get_mut(i),
         }
     }
@@ -95,6 +157,7 @@ impl<T> OptVec<T> {
         match self {
             OptVec::None => {},
             OptVec::One(t) => f(t),
+            OptVec::Two(s) => for t in s { f(t); },
             OptVec::Vec(v) => for t in v { f(t); },
         }
     }
@@ -104,6 +167,7 @@ impl<T> OptVec<T> {
         match tmp {
             OptVec::None => {},
             OptVec::One(t) => f(t),
+            OptVec::Two(s) => for t in s { f(t); },
             OptVec::Vec(v) => for t in v { f(t); },
         }
     }
@@ -115,6 +179,7 @@ impl<T> OptVec<T> {
 pub enum IntoIter<T> {
     None,
     One(T),
+    Two([T;2]),
     Vec(std::vec::IntoIter<T>),
 }
 impl<T> Iterator for IntoIter<T> {
@@ -123,15 +188,21 @@ impl<T> Iterator for IntoIter<T> {
     fn next(&mut self) -> Option<T> {
         match self {
             IntoIter::None => None,
-            IntoIter::One(_) => {
+            IntoIter::Vec(v) => v.next(),
+            _ => {
                 let mut tmp = IntoIter::None;
                 std::mem::swap(&mut tmp, self);
                 match tmp {
+                    IntoIter::None |
+                    IntoIter::Vec(_) => unreachable!(),
                     IntoIter::One(t) => Some(t),
-                    _ => unreachable!(),
+                    IntoIter::Two([t1, t2]) => {
+                        *self = IntoIter::One(t2);
+                        Some(t1)
+                    },
                 }
             },
-            IntoIter::Vec(v) => v.next(),
+            
         }
     }
 }
@@ -144,6 +215,7 @@ impl<T> IntoIterator for OptVec<T> {
         match self {
             OptVec::None => IntoIter::None,
             OptVec::One(t) => IntoIter::One(t),
+            OptVec::Two(s) => IntoIter::Two(s),
             OptVec::Vec(v) => IntoIter::Vec(v.into_iter()),
         }
     }
@@ -153,7 +225,7 @@ impl<T> IntoIterator for OptVec<T> {
 pub enum Iter<'t,T> {
     None,
     One(&'t T),
-    Vec(std::slice::Iter<'t,T>),
+    Slice(std::slice::Iter<'t,T>),
 }
 impl<'t,T> Iterator for Iter<'t,T> {
     type Item = &'t T;
@@ -161,15 +233,16 @@ impl<'t,T> Iterator for Iter<'t,T> {
     fn next(&mut self) -> Option<Self::Item> {
         match self {
             Iter::None => None,
-            Iter::One(_) => {
+            Iter::Slice(s) => s.next(),
+            _ => {
                 let mut tmp = Iter::None;
                 std::mem::swap(&mut tmp, self);
                 match tmp {
+                    Iter::None |
+                    Iter::Slice(_) => unreachable!(),
                     Iter::One(t) => Some(t),
-                    _ => unreachable!(),
                 }
             },
-            Iter::Vec(v) => v.next(),
         }
     }
 }
@@ -182,7 +255,8 @@ impl<'t, T> IntoIterator for &'t OptVec<T> {
         match self {
             OptVec::None => Iter::None,
             OptVec::One(t) => Iter::One(t),
-            OptVec::Vec(v) => Iter::Vec(v.iter()),
+            OptVec::Two(s) => Iter::Slice(s.iter()),
+            OptVec::Vec(v) => Iter::Slice(v.iter()),
         }
     }
 }
@@ -190,7 +264,7 @@ impl<'t, T> IntoIterator for &'t OptVec<T> {
 pub enum IterMut<'t,T> {
     None,
     One(&'t mut T),
-    Vec(std::slice::IterMut<'t,T>),
+    Slice(std::slice::IterMut<'t,T>),
 }
 impl<'t,T> Iterator for IterMut<'t,T> {
     type Item = &'t mut T;
@@ -198,15 +272,16 @@ impl<'t,T> Iterator for IterMut<'t,T> {
     fn next(&mut self) -> Option<Self::Item> {
         match self {
             IterMut::None => None,
-            IterMut::One(_) => {
+            IterMut::Slice(s) => s.next(),
+            _ => {
                 let mut tmp = IterMut::None;
                 std::mem::swap(&mut tmp, self);
                 match tmp {
+                    IterMut::None |
+                    IterMut::Slice(_) => unreachable!(),
                     IterMut::One(t) => Some(t),
-                    _ => unreachable!(),
                 }
             },
-            IterMut::Vec(v) => v.next(),
         }
     }
 }
@@ -219,7 +294,8 @@ impl<'t, T> IntoIterator for &'t mut OptVec<T> {
         match self {
             OptVec::None => IterMut::None,
             OptVec::One(t) => IterMut::One(t),
-            OptVec::Vec(v) => IterMut::Vec(v.iter_mut()),
+            OptVec::Two(s) => IterMut::Slice(s.iter_mut()),
+            OptVec::Vec(v) => IterMut::Slice(v.iter_mut()),
         }
     }
 }
