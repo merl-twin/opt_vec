@@ -293,6 +293,24 @@ impl<T: Hash + Eq> OptHashSet<T> {
             },
         }
     }
+
+    pub fn filter_set<B, F>(self, mut f: F) -> OptHashSet<B>
+    where F: FnMut(T) -> Option<B>,
+          B: Eq + Hash
+    {
+        match self {
+            OptHashSet::None => OptHashSet::None,
+            OptHashSet::One(v) => match f(v) {
+                None => OptHashSet::None,
+                Some(b) => OptHashSet::One(b),
+            },
+            hs @ _ => {
+                let mut res = OptHashSet::None;
+                res.extend(hs.into_iter().filter_map(f));
+                res
+            },
+        }
+    }
 }
 
 impl<T: Eq + Hash + Clone> OptHashSet<T> {
