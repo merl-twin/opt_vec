@@ -29,6 +29,24 @@ pub enum OptVec10<T> {
     Ten([T; 10]),
     Vec(Vec<T>),
 }
+impl<T> Into<crate::vec::OptVec<T>> for OptVec10<T> {
+    fn into(self) -> crate::vec::OptVec<T> {
+        match self {
+            OptVec10::None => crate::vec::OptVec::None,
+            OptVec10::One(t) => crate::vec::OptVec::One(t),
+            OptVec10::Two(s) => crate::vec::OptVec::Two(s),
+            OptVec10::Three(s) => crate::vec::OptVec::Three(s),
+            OptVec10::Four(iv) => crate::vec::OptVec::Vec(iv.into()),
+            OptVec10::Five(iv) => crate::vec::OptVec::Vec(iv.into()),
+            OptVec10::Six(iv) => crate::vec::OptVec::Vec(iv.into()),
+            OptVec10::Seven(iv) => crate::vec::OptVec::Vec(iv.into()),
+            OptVec10::Eight(iv) => crate::vec::OptVec::Vec(iv.into()),
+            OptVec10::Nine(iv) => crate::vec::OptVec::Vec(iv.into()),
+            OptVec10::Ten(iv) => crate::vec::OptVec::Vec(iv.into()),
+            OptVec10::Vec(v) => crate::vec::OptVec::Vec(v),
+        }
+    }
+}
 impl<T> From<T> for OptVec10<T> {
     fn from(t: T) -> OptVec10<T> {
         OptVec10::One(t)
