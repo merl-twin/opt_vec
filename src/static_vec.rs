@@ -236,6 +236,12 @@ impl<T> OptVec<T> {
     pub fn new() -> OptVec<T> {
         OptVec::None
     }
+    pub fn with_capacity(sz: usize) -> OptVec<T> {
+        match sz > 10 {
+            true => OptVec::Vec(Vec::with_capacity(sz)),
+            false => OptVec::None,
+        }
+    }
     pub fn len(&self) -> usize {
         self_macro!(len_macro,self)
     }
