@@ -4,6 +4,8 @@ use std::{
 };
 
 
+// effective size can be 6
+
 #[derive(Debug,Clone,PartialEq,Eq)]
 pub enum OptHashSet<T: Hash + Eq> {
     None,

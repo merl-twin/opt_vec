@@ -8,6 +8,7 @@ pub enum OptVec<T> {
     None,
     One(T),
     Two([T; 2]),
+    Three([T; 3]),
     Vec(Vec<T>),
 }
 impl<T> From<T> for OptVec<T> {
@@ -24,6 +25,12 @@ impl<T> From<Vec<T>> for OptVec<T> {
                 let v2 = ts.pop().unwrap(); //safe
                 let v1 = ts.pop().unwrap(); // safe
                 OptVec::Two([v1, v2])
+            },
+            3 => {
+                let v3 = ts.pop().unwrap(); //safe
+                let v2 = ts.pop().unwrap(); //safe
+                let v1 = ts.pop().unwrap(); // safe
+                OptVec::Three([v1, v2, v3])
             },
             _ => OptVec::Vec(ts),
         }
@@ -79,6 +86,7 @@ impl<T> OptVec<T> {
             OptVec::None => 0,
             OptVec::One(_) => 1,
             OptVec::Two(_) => 2,
+            OptVec::Three(_) => 3,
             OptVec::Vec(v) => v.len(),
         }
     }
@@ -93,7 +101,8 @@ impl<T> OptVec<T> {
                     OptVec::None |
                     OptVec::Vec(_) => unreachable!(),
                     OptVec::One(t) => *self = OptVec::Two([t,el]),
-                    OptVec::Two([t1,t2]) => *self = OptVec::Vec(vec![t1,t2,el]),
+                    OptVec::Two([t1,t2]) => *self = OptVec::Three([t1,t2,el]),
+                    OptVec::Three([t1,t2,t3]) => *self = OptVec::Vec(vec![t1,t2,t3,el]),
                 }
             },
             
@@ -112,13 +121,16 @@ impl<T> OptVec<T> {
                     OptVec::None |
                     OptVec::Vec(_) => unreachable!(),
                     OptVec::One(t) => Some(t),
-                    OptVec::Two([t1,t2]) => {
+                    OptVec::Two([t1,q]) => {
                         *self = OptVec::One(t1);
-                        Some(t2)
+                        Some(q)
+                    },
+                    OptVec::Three([t1,t2,q]) => {
+                        *self = OptVec::Two([t1,t2]);
+                        Some(q)
                     },
                 }
-            },
-            
+            },            
         }
     }
 
@@ -130,6 +142,7 @@ impl<T> OptVec<T> {
                 false => None,
             },
             OptVec::Two(s) => s.get(i),
+            OptVec::Three(s) => s.get(i),
             OptVec::Vec(v) => v.get(i),
         }
     }
@@ -141,6 +154,7 @@ impl<T> OptVec<T> {
                 false => None,
             },
             OptVec::Two(s) => s.get_mut(i),
+            OptVec::Three(s) => s.get_mut(i),
             OptVec::Vec(v) => v.get_mut(i),
         }
     }
@@ -158,6 +172,7 @@ impl<T> OptVec<T> {
             OptVec::None => {},
             OptVec::One(t) => f(t),
             OptVec::Two(s) => for t in s { f(t); },
+            OptVec::Three(s) => for t in s { f(t); },
             OptVec::Vec(v) => for t in v { f(t); },
         }
     }
@@ -168,6 +183,7 @@ impl<T> OptVec<T> {
             OptVec::None => {},
             OptVec::One(t) => f(t),
             OptVec::Two(s) => for t in s { f(t); },
+            OptVec::Three(s) => for t in s { f(t); },
             OptVec::Vec(v) => for t in v { f(t); },
         }
     }
@@ -180,6 +196,7 @@ pub enum IntoIter<T> {
     None,
     One(T),
     Two([T;2]),
+    Three([T;3]),
     Vec(std::vec::IntoIter<T>),
 }
 impl<T> Iterator for IntoIter<T> {
@@ -200,6 +217,10 @@ impl<T> Iterator for IntoIter<T> {
                         *self = IntoIter::One(t2);
                         Some(t1)
                     },
+                    IntoIter::Three([t1, t2, t3]) => {
+                        *self = IntoIter::Two([t2,t3]);
+                        Some(t1)
+                    },
                 }
             },
             
@@ -216,6 +237,7 @@ impl<T> IntoIterator for OptVec<T> {
             OptVec::None => IntoIter::None,
             OptVec::One(t) => IntoIter::One(t),
             OptVec::Two(s) => IntoIter::Two(s),
+            OptVec::Three(s) => IntoIter::Three(s),
             OptVec::Vec(v) => IntoIter::Vec(v.into_iter()),
         }
     }
@@ -256,6 +278,7 @@ impl<'t, T> IntoIterator for &'t OptVec<T> {
             OptVec::None => Iter::None,
             OptVec::One(t) => Iter::One(t),
             OptVec::Two(s) => Iter::Slice(s.iter()),
+            OptVec::Three(s) => Iter::Slice(s.iter()),
             OptVec::Vec(v) => Iter::Slice(v.iter()),
         }
     }
@@ -295,7 +318,76 @@ impl<'t, T> IntoIterator for &'t mut OptVec<T> {
             OptVec::None => IterMut::None,
             OptVec::One(t) => IterMut::One(t),
             OptVec::Two(s) => IterMut::Slice(s.iter_mut()),
+            OptVec::Three(s) => IterMut::Slice(s.iter_mut()),
             OptVec::Vec(v) => IterMut::Slice(v.iter_mut()),
         }
+    }
+}
+
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn basic() {
+        let mut v = OptVec::new();
+        let r: Vec<usize> = (0 .. 15).into_iter().collect::<Vec<_>>();
+        assert_eq!(v.len(),0);
+        for i in &r {
+            v.push(*i);
+            assert_eq!(v.len(),i+1);
+        }
+        let mut lib_r = Vec::new();
+        while v.len() > 0 {
+            lib_r.insert(0,v.pop().unwrap());
+        }
+        assert_eq!(lib_r,r)
+    }
+
+    #[test]
+    fn basic_get() {
+        let mut v = OptVec::new();
+        let r: Vec<usize> = (0 .. 15).into_iter().collect::<Vec<_>>();
+        for i in &r {
+            v.push(*i);
+            for n in 0 .. v.len() {
+                assert_eq!(r[n],*(v.get(n).unwrap()));
+                assert_eq!(r[n],*(v.get_mut(n).unwrap()));
+            }
+        }
+    }
+    
+    #[test]
+    fn basic_into_iter() {
+        let mut v = OptVec::new();
+        let r: Vec<usize> = (0 .. 15).into_iter().collect::<Vec<_>>();
+        for i in &r {
+            v.push(*i);
+        }
+        let lib_r = v.into_iter().collect::<Vec<_>>();
+        assert_eq!(lib_r,r)
+    }
+
+    #[test]
+    fn basic_iter() {
+        let mut v = OptVec::new();
+        let r: Vec<usize> = (0 .. 15).into_iter().collect::<Vec<_>>();
+        for i in &r {
+            v.push(*i);
+        }
+        let lib_r = v.iter().map(|x|*x).collect::<Vec<_>>();
+        assert_eq!(lib_r,r)
+    }
+
+    #[test]
+    fn basic_iter_mut() {
+        let mut v = OptVec::new();
+        let r: Vec<usize> = (0 .. 15).into_iter().collect::<Vec<_>>();
+        for i in &r {
+            v.push(*i);
+        }
+        let lib_r = v.iter_mut().map(|x|*x).collect::<Vec<_>>();
+        assert_eq!(lib_r,r)
     }
 }
