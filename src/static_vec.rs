@@ -15,7 +15,7 @@ macro_rules! self_f_macro {
 }
 
 #[derive(Debug,Clone,PartialEq,Eq,PartialOrd,Ord,Hash)]
-pub enum OptVec<T> {
+pub enum OptVec10<T> {
     None,
     One(T),
     Two([T; 2]),
@@ -29,26 +29,26 @@ pub enum OptVec<T> {
     Ten([T; 10]),
     Vec(Vec<T>),
 }
-impl<T> From<T> for OptVec<T> {
-    fn from(t: T) -> OptVec<T> {
-        OptVec::One(t)
+impl<T> From<T> for OptVec10<T> {
+    fn from(t: T) -> OptVec10<T> {
+        OptVec10::One(t)
     }
 }
-impl<T> From<Vec<T>> for OptVec<T> {
-    fn from(mut ts: Vec<T>) -> OptVec<T> {
+impl<T> From<Vec<T>> for OptVec10<T> {
+    fn from(mut ts: Vec<T>) -> OptVec10<T> {
         match ts.len() {
-            0 => OptVec::None,
-            1 => OptVec::One(ts.pop().unwrap()), // safe
+            0 => OptVec10::None,
+            1 => OptVec10::One(ts.pop().unwrap()), // safe
             2 => {
                 let mut iter = ts.into_iter();
-                OptVec::Two([
+                OptVec10::Two([
                     iter.next().unwrap(), // safe
                     iter.next().unwrap(), // safe
                 ])
             },
             3 => {
                 let mut iter = ts.into_iter();
-                OptVec::Three([
+                OptVec10::Three([
                     iter.next().unwrap(), // safe
                     iter.next().unwrap(), // safe
                     iter.next().unwrap(), // safe
@@ -56,7 +56,7 @@ impl<T> From<Vec<T>> for OptVec<T> {
             },
             4 => {
                 let mut iter = ts.into_iter();
-                OptVec::Four([
+                OptVec10::Four([
                     iter.next().unwrap(), // safe
                     iter.next().unwrap(), // safe
                     iter.next().unwrap(), // safe
@@ -65,7 +65,7 @@ impl<T> From<Vec<T>> for OptVec<T> {
             },
             5 => {
                 let mut iter = ts.into_iter();
-                OptVec::Five([
+                OptVec10::Five([
                     iter.next().unwrap(), // safe
                     iter.next().unwrap(), // safe
                     iter.next().unwrap(), // safe
@@ -75,7 +75,7 @@ impl<T> From<Vec<T>> for OptVec<T> {
             },
             6 => {
                 let mut iter = ts.into_iter();
-                OptVec::Six([
+                OptVec10::Six([
                     iter.next().unwrap(), // safe
                     iter.next().unwrap(), // safe
                     iter.next().unwrap(), // safe
@@ -86,7 +86,7 @@ impl<T> From<Vec<T>> for OptVec<T> {
             },
             7 => {
                 let mut iter = ts.into_iter();
-                OptVec::Seven([
+                OptVec10::Seven([
                     iter.next().unwrap(), // safe
                     iter.next().unwrap(), // safe
                     iter.next().unwrap(), // safe
@@ -98,7 +98,7 @@ impl<T> From<Vec<T>> for OptVec<T> {
             },
             8 => {
                 let mut iter = ts.into_iter();
-                OptVec::Eight([
+                OptVec10::Eight([
                     iter.next().unwrap(), // safe
                     iter.next().unwrap(), // safe
                     iter.next().unwrap(), // safe
@@ -111,7 +111,7 @@ impl<T> From<Vec<T>> for OptVec<T> {
             },
             9 => {
                 let mut iter = ts.into_iter();
-                OptVec::Nine([
+                OptVec10::Nine([
                     iter.next().unwrap(), // safe
                     iter.next().unwrap(), // safe
                     iter.next().unwrap(), // safe
@@ -125,7 +125,7 @@ impl<T> From<Vec<T>> for OptVec<T> {
             },
             10 => {
                 let mut iter = ts.into_iter();
-                OptVec::Ten([
+                OptVec10::Ten([
                     iter.next().unwrap(), // safe
                     iter.next().unwrap(), // safe
                     iter.next().unwrap(), // safe
@@ -138,17 +138,17 @@ impl<T> From<Vec<T>> for OptVec<T> {
                     iter.next().unwrap(), // safe
                 ])
             },
-            _ => OptVec::Vec(ts),
+            _ => OptVec10::Vec(ts),
         }
     }
 }
 
-impl<T> Extend<T> for OptVec<T> {
+impl<T> Extend<T> for OptVec10<T> {
     fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
         let mut iter = iter.into_iter();
         loop {
             match self {
-                OptVec::Vec(v) => {
+                OptVec10::Vec(v) => {
                     v.extend(iter);
                     break;
                 },
@@ -161,34 +161,34 @@ impl<T> Extend<T> for OptVec<T> {
     }
 }
 
-impl<T> FromIterator<T> for OptVec<T> {
-    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> OptVec<T> {
-        let mut slf = OptVec::None;
+impl<T> FromIterator<T> for OptVec10<T> {
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> OptVec10<T> {
+        let mut slf = OptVec10::None;
         slf.extend(iter);
         slf
     }
 }
 
-impl<T> Index<usize> for OptVec<T> {
+impl<T> Index<usize> for OptVec10<T> {
     type Output = T;
 
     fn index(&self, index: usize) -> &T {
-        self.get(index).expect("OptVec index is out of range")
+        self.get(index).expect("OptVec10 index is out of range")
     }
 }
-impl<T> IndexMut<usize> for OptVec<T> {
+impl<T> IndexMut<usize> for OptVec10<T> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
-        self.get_mut(index).expect("OptVec index is out of range")
+        self.get_mut(index).expect("OptVec10 index is out of range")
     }
 }
 
 macro_rules! run_f_macro {
     ( $slf:ident, $f:ident, $( $value:ident ),* ) => {
         match $slf {
-            OptVec::None => {},
-            OptVec::One(t) => $f(t), 
-            $( OptVec::$value(s) => for t in s { $f(t); }, )*
-            OptVec::Vec(v) => for t in v { $f(t); },
+            OptVec10::None => {},
+            OptVec10::One(t) => $f(t), 
+            $( OptVec10::$value(s) => for t in s { $f(t); }, )*
+            OptVec10::Vec(v) => for t in v { $f(t); },
         }
     }   
 }
@@ -196,10 +196,10 @@ macro_rules! run_f_macro {
 macro_rules! len_macro {
     ( $slf:ident, $( $value:ident ),* ) => {
         match $slf {
-            OptVec::None => 0,
-            OptVec::One(_) => 1,
-            $( OptVec::$value(s) => s.len(), )*
-            OptVec::Vec(v) => v.len(),
+            OptVec10::None => 0,
+            OptVec10::One(_) => 1,
+            $( OptVec10::$value(s) => s.len(), )*
+            OptVec10::Vec(v) => v.len(),
         }
     }   
 }
@@ -207,13 +207,13 @@ macro_rules! len_macro {
 macro_rules! get_macro {
     ( $slf:ident, $i:ident, $( $value:ident ),* ) => {
         match $slf {
-            OptVec::None => None,
-            OptVec::One(t) => match $i == 0 {
+            OptVec10::None => None,
+            OptVec10::One(t) => match $i == 0 {
                 true => Some(t),
                 false => None,
             },
-            $( OptVec::$value(s) => s.get($i), )*
-            OptVec::Vec(v) => v.get($i),
+            $( OptVec10::$value(s) => s.get($i), )*
+            OptVec10::Vec(v) => v.get($i),
         }
     }   
 }
@@ -221,25 +221,25 @@ macro_rules! get_macro {
 macro_rules! get_mut_macro {
     ( $slf:ident, $i:ident, $( $value:ident ),* ) => {
         match $slf {
-            OptVec::None => None,
-            OptVec::One(t) => match $i == 0 {
+            OptVec10::None => None,
+            OptVec10::One(t) => match $i == 0 {
                 true => Some(t),
                 false => None,
             },
-            $( OptVec::$value(s) => s.get_mut($i), )*
-            OptVec::Vec(v) => v.get_mut($i),
+            $( OptVec10::$value(s) => s.get_mut($i), )*
+            OptVec10::Vec(v) => v.get_mut($i),
         }
     }   
 }
 
-impl<T> OptVec<T> {
-    pub fn new() -> OptVec<T> {
-        OptVec::None
+impl<T> OptVec10<T> {
+    pub fn new() -> OptVec10<T> {
+        OptVec10::None
     }
-    pub fn with_capacity(sz: usize) -> OptVec<T> {
+    pub fn with_capacity(sz: usize) -> OptVec10<T> {
         match sz > 10 {
-            true => OptVec::Vec(Vec::with_capacity(sz)),
-            false => OptVec::None,
+            true => OptVec10::Vec(Vec::with_capacity(sz)),
+            false => OptVec10::None,
         }
     }
     pub fn len(&self) -> usize {
@@ -247,24 +247,24 @@ impl<T> OptVec<T> {
     }
     pub fn push(&mut self, el: T) {
         match self {
-            OptVec::None => *self = OptVec::One(el),
-            OptVec::Vec(v) => v.push(el),
+            OptVec10::None => *self = OptVec10::One(el),
+            OptVec10::Vec(v) => v.push(el),
             _ => {
-                let mut tmp = OptVec::None;
+                let mut tmp = OptVec10::None;
                 std::mem::swap(&mut tmp, self);
                 match tmp {
-                    OptVec::None |
-                    OptVec::Vec(_) => unreachable!(),
-                    OptVec::One(t) => *self = OptVec::Two([t,el]),
-                    OptVec::Two([t1,t2]) => *self = OptVec::Three([t1,t2,el]),
-                    OptVec::Three([t1,t2,t3]) => *self = OptVec::Four([t1,t2,t3,el]),
-                    OptVec::Four([t1,t2,t3,t4]) => *self = OptVec::Five([t1,t2,t3,t4,el]),
-                    OptVec::Five([t1,t2,t3,t4,t5]) => *self = OptVec::Six([t1,t2,t3,t4,t5,el]),
-                    OptVec::Six([t1,t2,t3,t4,t5,t6]) => *self = OptVec::Seven([t1,t2,t3,t4,t5,t6,el]),
-                    OptVec::Seven([t1,t2,t3,t4,t5,t6,t7]) => *self = OptVec::Eight([t1,t2,t3,t4,t5,t6,t7,el]),
-                    OptVec::Eight([t1,t2,t3,t4,t5,t6,t7,t8]) => *self = OptVec::Nine([t1,t2,t3,t4,t5,t6,t7,t8,el]),
-                    OptVec::Nine([t1,t2,t3,t4,t5,t6,t7,t8,t9]) => *self = OptVec::Ten([t1,t2,t3,t4,t5,t6,t7,t8,t9,el]),
-                    OptVec::Ten([t1,t2,t3,t4,t5,t6,t7,t8,t9,t10]) => *self = OptVec::Vec(vec![t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,el]),
+                    OptVec10::None |
+                    OptVec10::Vec(_) => unreachable!(),
+                    OptVec10::One(t) => *self = OptVec10::Two([t,el]),
+                    OptVec10::Two([t1,t2]) => *self = OptVec10::Three([t1,t2,el]),
+                    OptVec10::Three([t1,t2,t3]) => *self = OptVec10::Four([t1,t2,t3,el]),
+                    OptVec10::Four([t1,t2,t3,t4]) => *self = OptVec10::Five([t1,t2,t3,t4,el]),
+                    OptVec10::Five([t1,t2,t3,t4,t5]) => *self = OptVec10::Six([t1,t2,t3,t4,t5,el]),
+                    OptVec10::Six([t1,t2,t3,t4,t5,t6]) => *self = OptVec10::Seven([t1,t2,t3,t4,t5,t6,el]),
+                    OptVec10::Seven([t1,t2,t3,t4,t5,t6,t7]) => *self = OptVec10::Eight([t1,t2,t3,t4,t5,t6,t7,el]),
+                    OptVec10::Eight([t1,t2,t3,t4,t5,t6,t7,t8]) => *self = OptVec10::Nine([t1,t2,t3,t4,t5,t6,t7,t8,el]),
+                    OptVec10::Nine([t1,t2,t3,t4,t5,t6,t7,t8,t9]) => *self = OptVec10::Ten([t1,t2,t3,t4,t5,t6,t7,t8,t9,el]),
+                    OptVec10::Ten([t1,t2,t3,t4,t5,t6,t7,t8,t9,t10]) => *self = OptVec10::Vec(vec![t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,el]),
                 }
             },
             
@@ -272,51 +272,51 @@ impl<T> OptVec<T> {
     }
     pub fn pop(&mut self) -> Option<T> {
         match self {
-            OptVec::None => None,
-            OptVec::Vec(v) => {
+            OptVec10::None => None,
+            OptVec10::Vec(v) => {
                 v.pop()
             },
             _ => {
-                let mut tmp = OptVec::None;
+                let mut tmp = OptVec10::None;
                 std::mem::swap(&mut tmp, self);
                 match tmp {
-                    OptVec::None |
-                    OptVec::Vec(_) => unreachable!(),
-                    OptVec::One(t) => Some(t),
-                    OptVec::Two([t1,q]) => {
-                        *self = OptVec::One(t1);
+                    OptVec10::None |
+                    OptVec10::Vec(_) => unreachable!(),
+                    OptVec10::One(t) => Some(t),
+                    OptVec10::Two([t1,q]) => {
+                        *self = OptVec10::One(t1);
                         Some(q)
                     },
-                    OptVec::Three([t1,t2,q]) => {
-                        *self = OptVec::Two([t1,t2]);
+                    OptVec10::Three([t1,t2,q]) => {
+                        *self = OptVec10::Two([t1,t2]);
                         Some(q)
                     },
-                    OptVec::Four([t1,t2,t3,q]) => {
-                        *self = OptVec::Three([t1,t2,t3]);
+                    OptVec10::Four([t1,t2,t3,q]) => {
+                        *self = OptVec10::Three([t1,t2,t3]);
                         Some(q)
                     },
-                    OptVec::Five([t1,t2,t3,t4,q]) => {
-                        *self = OptVec::Four([t1,t2,t3,t4]);
+                    OptVec10::Five([t1,t2,t3,t4,q]) => {
+                        *self = OptVec10::Four([t1,t2,t3,t4]);
                         Some(q)
                     },
-                    OptVec::Six([t1,t2,t3,t4,t5,q]) => {
-                        *self = OptVec::Five([t1,t2,t3,t4,t5]);
+                    OptVec10::Six([t1,t2,t3,t4,t5,q]) => {
+                        *self = OptVec10::Five([t1,t2,t3,t4,t5]);
                         Some(q)
                     },
-                    OptVec::Seven([t1,t2,t3,t4,t5,t6,q]) => {
-                        *self = OptVec::Six([t1,t2,t3,t4,t5,t6]);
+                    OptVec10::Seven([t1,t2,t3,t4,t5,t6,q]) => {
+                        *self = OptVec10::Six([t1,t2,t3,t4,t5,t6]);
                         Some(q)
                     },
-                    OptVec::Eight([t1,t2,t3,t4,t5,t6,t7,q]) => {
-                        *self = OptVec::Seven([t1,t2,t3,t4,t5,t6,t7]);
+                    OptVec10::Eight([t1,t2,t3,t4,t5,t6,t7,q]) => {
+                        *self = OptVec10::Seven([t1,t2,t3,t4,t5,t6,t7]);
                         Some(q)
                     },
-                    OptVec::Nine([t1,t2,t3,t4,t5,t6,t7,t8,q]) => {
-                        *self = OptVec::Eight([t1,t2,t3,t4,t5,t6,t7,t8]);
+                    OptVec10::Nine([t1,t2,t3,t4,t5,t6,t7,t8,q]) => {
+                        *self = OptVec10::Eight([t1,t2,t3,t4,t5,t6,t7,t8]);
                         Some(q)
                     },
-                    OptVec::Ten([t1,t2,t3,t4,t5,t6,t7,t8,t9,q]) => {
-                        *self = OptVec::Nine([t1,t2,t3,t4,t5,t6,t7,t8,t9]);
+                    OptVec10::Ten([t1,t2,t3,t4,t5,t6,t7,t8,t9,q]) => {
+                        *self = OptVec10::Nine([t1,t2,t3,t4,t5,t6,t7,t8,t9]);
                         Some(q)
                     },
                 }
@@ -343,7 +343,7 @@ impl<T> OptVec<T> {
         self_f_macro!(run_f_macro,self,f)
     }
     pub fn consume<F: FnMut(T)>(&mut self, mut f: F)  {
-        let mut tmp = OptVec::None;
+        let mut tmp = OptVec10::None;
         std::mem::swap(&mut tmp, self);
         self_f_macro!(run_f_macro,tmp,f)
     }
@@ -423,15 +423,15 @@ impl<T> Iterator for IntoIter<T> {
 macro_rules! into_iter_macro {
     ( $slf:ident, $( $value:ident ),* ) => {
         match $slf {
-            OptVec::None => IntoIter::None,
-            OptVec::One(t) => IntoIter::One(t), 
-            $( OptVec::$value(s) => IntoIter::$value(s), )*
-            OptVec::Vec(v) => IntoIter::Vec(v.into_iter()),
+            OptVec10::None => IntoIter::None,
+            OptVec10::One(t) => IntoIter::One(t), 
+            $( OptVec10::$value(s) => IntoIter::$value(s), )*
+            OptVec10::Vec(v) => IntoIter::Vec(v.into_iter()),
         }
     }   
 }
 
-impl<T> IntoIterator for OptVec<T> {
+impl<T> IntoIterator for OptVec10<T> {
     type Item = T;
     type IntoIter = IntoIter<T>;
 
@@ -469,15 +469,15 @@ impl<'t,T> Iterator for Iter<'t,T> {
 macro_rules! ref_into_iter_macro {
     ( $slf:ident, $( $value:ident ),* ) => {
         match $slf {
-            OptVec::None => Iter::None,
-            OptVec::One(t) => Iter::One(t),
-            $( OptVec::$value(s) => Iter::Slice(s.iter()), )*
-            OptVec::Vec(v) => Iter::Slice(v.iter()),
+            OptVec10::None => Iter::None,
+            OptVec10::One(t) => Iter::One(t),
+            $( OptVec10::$value(s) => Iter::Slice(s.iter()), )*
+            OptVec10::Vec(v) => Iter::Slice(v.iter()),
         }
     }   
 }
 
-impl<'t, T> IntoIterator for &'t OptVec<T> {
+impl<'t, T> IntoIterator for &'t OptVec10<T> {
     type Item = &'t T;
     type IntoIter = Iter<'t,T>;
 
@@ -514,15 +514,15 @@ impl<'t,T> Iterator for IterMut<'t,T> {
 macro_rules! ref_mut_into_iter_macro {
     ( $slf:ident, $( $value:ident ),* ) => {
         match $slf {
-            OptVec::None => IterMut::None,
-            OptVec::One(t) => IterMut::One(t),
-            $( OptVec::$value(s) => IterMut::Slice(s.iter_mut()), )*
-            OptVec::Vec(v) => IterMut::Slice(v.iter_mut()),
+            OptVec10::None => IterMut::None,
+            OptVec10::One(t) => IterMut::One(t),
+            $( OptVec10::$value(s) => IterMut::Slice(s.iter_mut()), )*
+            OptVec10::Vec(v) => IterMut::Slice(v.iter_mut()),
         }
     }   
 }
 
-impl<'t, T> IntoIterator for &'t mut OptVec<T> {
+impl<'t, T> IntoIterator for &'t mut OptVec10<T> {
     type Item = &'t mut T;
     type IntoIter = IterMut<'t,T>;
 
@@ -538,7 +538,7 @@ mod test {
 
     #[test]
     fn basic() {
-        let mut v = OptVec::new();
+        let mut v = OptVec10::new();
         let r: Vec<usize> = (0 .. 15).into_iter().collect::<Vec<_>>();
         assert_eq!(v.len(),0);
         for i in &r {
@@ -554,7 +554,7 @@ mod test {
 
     #[test]
     fn basic_get() {
-        let mut v = OptVec::new();
+        let mut v = OptVec10::new();
         let r: Vec<usize> = (0 .. 15).into_iter().collect::<Vec<_>>();
         for i in &r {
             v.push(*i);
@@ -567,7 +567,7 @@ mod test {
     
     #[test]
     fn basic_into_iter() {
-        let mut v = OptVec::new();
+        let mut v = OptVec10::new();
         let r: Vec<usize> = (0 .. 15).into_iter().collect::<Vec<_>>();
         for i in &r {
             v.push(*i);
@@ -578,7 +578,7 @@ mod test {
 
     #[test]
     fn basic_iter() {
-        let mut v = OptVec::new();
+        let mut v = OptVec10::new();
         let r: Vec<usize> = (0 .. 15).into_iter().collect::<Vec<_>>();
         for i in &r {
             v.push(*i);
@@ -589,7 +589,7 @@ mod test {
 
     #[test]
     fn basic_iter_mut() {
-        let mut v = OptVec::new();
+        let mut v = OptVec10::new();
         let r: Vec<usize> = (0 .. 15).into_iter().collect::<Vec<_>>();
         for i in &r {
             v.push(*i);
