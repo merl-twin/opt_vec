@@ -260,6 +260,11 @@ impl<T> OptVec10<T> {
             false => OptVec10::None,
         }
     }
+    pub fn take(&mut self) -> OptVec10<T> {
+        let mut tmp = OptVec10::None;
+        std::mem::swap(self, &mut tmp);
+        tmp
+    }
     pub fn len(&self) -> usize {
         self_macro!(len_macro,self)
     }

@@ -87,6 +87,11 @@ impl<T> OptVec<T> {
             false => OptVec::None,
         }
     }
+    pub fn take(&mut self) -> OptVec<T> {
+        let mut tmp = OptVec::None;
+        std::mem::swap(self, &mut tmp);
+        tmp
+    }
     pub fn len(&self) -> usize {
         match self {
             OptVec::None => 0,
