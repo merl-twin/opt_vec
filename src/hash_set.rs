@@ -220,6 +220,30 @@ impl<T: Hash + Eq> OptHashSet<T> {
     pub fn iter(&self) -> Iter<T> {
         self.into_iter()
     }
+
+    pub fn intersection_size(&self, other: &OptHashSet<T>) -> usize {
+        match (self,other) {
+            (OptHashSet::None,_) |
+            (_,OptHashSet::None) => 0,
+            (OptHashSet::One(v1),OptHashSet::One(v2)) => match *v1 == *v2 {
+                true => 1,
+                false => 0,
+            },
+            (OptHashSet::Set(hv1),OptHashSet::Set(hv2)) => hv1.intersection(hv2).count(),
+            (_,_) => {
+                let mut cnt = 0;
+                match other.len() > self.len() {
+                    true => for v1 in self.iter() {
+                        if other.contains(v1) { cnt += 1; }
+                    },
+                    false => for v2 in other.iter() {
+                        if self.contains(v2) { cnt += 1; }
+                    },
+                }
+                cnt
+            },
+        }
+    }
 }
 
 
