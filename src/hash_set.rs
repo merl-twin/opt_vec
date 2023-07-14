@@ -244,6 +244,85 @@ impl<T: Hash + Eq> OptHashSet<T> {
             },
         }
     }
+
+    pub fn unite(self, other: OptHashSet<T>) -> OptHashSet<T> {
+        match (self,other) {
+            (OptHashSet::None,qs) | (qs,OptHashSet::None) => qs,
+            (OptHashSet::One(v1),OptHashSet::One(v2)) => match v1 == v2 {
+                true => OptHashSet::One(v1),
+                false => OptHashSet::Two([v1,v2]),
+            },
+            (mut slf, mut oth) => match slf.len() > oth.len() {                
+                true => {
+                    slf.extend(oth);
+                    slf
+                },
+                false => {
+                    oth.extend(slf);
+                    oth
+                }
+            },
+        }
+    }
+
+
+    pub fn intersect(self, other: OptHashSet<T>) -> OptHashSet<T> {
+        match (self,other) {
+            (OptHashSet::None,_) |
+            (_,OptHashSet::None) => OptHashSet::None,
+            (OptHashSet::One(v1),OptHashSet::One(v2)) => match v1 == v2 {
+                true => OptHashSet::One(v1),
+                false => OptHashSet::None,
+            },
+            (OptHashSet::One(v),OptHashSet::Set(hv)) => match hv.contains(&v) {
+                true => OptHashSet::One(v),
+                false => OptHashSet::None,
+            },
+            (OptHashSet::Set(hv),OptHashSet::One(v)) => match hv.contains(&v) {
+                true => OptHashSet::One(v),
+                false => OptHashSet::None,
+            },
+            (hv1,hv2) => {
+                let iter = hv1.into_iter().filter_map(|v1| match hv2.contains(&v1) {
+                    true => Some(v1),
+                    false => None,
+                });
+                let mut res = OptHashSet::None;
+                res.extend(iter);
+                res
+            },
+        }
+    }
+}
+
+impl<T: Eq + Hash + Clone> OptHashSet<T> {
+    pub fn intersection(&self, other: &OptHashSet<T>) -> OptHashSet<T> {
+        match (self,other) {
+            (OptHashSet::None,_) |
+            (_,OptHashSet::None) => OptHashSet::None,
+            (OptHashSet::One(v1),OptHashSet::One(v2)) => match *v1 == *v2 {
+                true => OptHashSet::One(v1.clone()),
+                false => OptHashSet::None,
+            },
+            (OptHashSet::One(v),OptHashSet::Set(hv)) => match hv.contains(v) {
+                true => OptHashSet::One(v.clone()),
+                false => OptHashSet::None,
+            },
+            (OptHashSet::Set(hv),OptHashSet::One(v)) => match hv.contains(v) {
+                true => OptHashSet::One(v.clone()),
+                false => OptHashSet::None,
+            },
+            (hv1,hv2) => {
+                let iter = hv1.iter().filter_map(|v1| match hv2.contains(&v1) {
+                    true => Some(v1),
+                    false => None,
+                });
+                let mut res = OptHashSet::None;
+                res.extend(iter.cloned());
+                res
+            },
+        }
+    }
 }
 
 
