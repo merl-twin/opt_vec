@@ -11,6 +11,10 @@ pub enum OptHashSet<T: Hash + Eq> {
     None,
     One(T),
     Two([T; 2]),
+    Three([T; 3]),
+    Four([T; 4]),
+    Five([T; 5]),
+    Six([T; 6]),
     Set(HashSet<T>),
 }
 impl<T: Hash + Eq> From<T> for OptHashSet<T> {
@@ -31,9 +35,48 @@ impl<T: Hash + Eq> From<HashSet<T>> for OptHashSet<T> {
             1 => OptHashSet::One(ts.into_iter().next().unwrap()), // safe
             2 => {
                 let mut it = ts.into_iter();
-                let v1 = it.next().unwrap(); //safe
-                let v2 = it.next().unwrap(); // safe
-                OptHashSet::Two([v1, v2])
+                OptHashSet::Two([
+                    it.next().unwrap(), //safe
+                    it.next().unwrap(), //safe
+                ])
+            },
+            3 => {
+                let mut it = ts.into_iter();
+                OptHashSet::Three([
+                    it.next().unwrap(), //safe
+                    it.next().unwrap(), //safe
+                    it.next().unwrap(), //safe
+                ])
+            },
+            4 => {
+                let mut it = ts.into_iter();
+                OptHashSet::Four([
+                    it.next().unwrap(), //safe
+                    it.next().unwrap(), //safe
+                    it.next().unwrap(), //safe
+                    it.next().unwrap(), //safe
+                ])
+            },
+            5 => {
+                let mut it = ts.into_iter();
+                OptHashSet::Five([
+                    it.next().unwrap(), //safe
+                    it.next().unwrap(), //safe
+                    it.next().unwrap(), //safe
+                    it.next().unwrap(), //safe
+                    it.next().unwrap(), //safe
+                ])
+            },
+            6 => {
+                let mut it = ts.into_iter();
+                OptHashSet::Six([
+                    it.next().unwrap(), //safe
+                    it.next().unwrap(), //safe
+                    it.next().unwrap(), //safe
+                    it.next().unwrap(), //safe
+                    it.next().unwrap(), //safe
+                    it.next().unwrap(), //safe
+                ])
             },
             _ => OptHashSet::Set(ts),
         }
@@ -75,6 +118,10 @@ impl<T: Hash + Eq> OptHashSet<T> {
             OptHashSet::None => 0,
             OptHashSet::One(_) => 1,
             OptHashSet::Two(_) => 2,
+            OptHashSet::Three(_) => 3,
+            OptHashSet::Four(_) => 4,
+            OptHashSet::Five(_) => 5,
+            OptHashSet::Six(_) => 6,
             OptHashSet::Set(v) => v.len(),
         }
     }
@@ -103,11 +150,51 @@ impl<T: Hash + Eq> OptHashSet<T> {
                     },
                     OptHashSet::Two([t1,t2]) => match (t1 != el)&&(t2 != el) {
                         true => {
-                            *self = OptHashSet::from(vec![t1,t2,el]);
+                            *self = OptHashSet::Three([t1,t2,el]);
                             true
                         },
                         false => {
                             *self =  OptHashSet::Two([t1,t2]);
+                            false
+                        }
+                    },
+                    OptHashSet::Three([t1,t2,t3]) => match (t1 != el)&&(t2 != el)&&(t3 != el) {
+                        true => {
+                            *self = OptHashSet::Four([t1,t2,t3,el]);
+                            true
+                        },
+                        false => {
+                            *self =  OptHashSet::Three([t1,t2,t3]);
+                            false
+                        }
+                    },
+                    OptHashSet::Four([t1,t2,t3,t4]) => match (t1 != el)&&(t2 != el)&&(t3 != el)&&(t4 != el) {
+                        true => {
+                            *self = OptHashSet::Five([t1,t2,t3,t4,el]);
+                            true
+                        },
+                        false => {
+                            *self =  OptHashSet::Four([t1,t2,t3,t4]);
+                            false
+                        }
+                    },
+                    OptHashSet::Five([t1,t2,t3,t4,t5]) => match (t1 != el)&&(t2 != el)&&(t3 != el)&&(t4 != el)&&(t5 != el) {
+                        true => {
+                            *self = OptHashSet::Six([t1,t2,t3,t4,t5,el]);
+                            true
+                        },
+                        false => {
+                            *self =  OptHashSet::Five([t1,t2,t3,t4,t5]);
+                            false
+                        }
+                    },
+                    OptHashSet::Six([t1,t2,t3,t4,t5,t6]) => match (t1 != el)&&(t2 != el)&&(t3 != el)&&(t4 != el)&&(t5 != el)&&(t6 != el) {
+                        true => {
+                            *self = OptHashSet::from(vec![t1,t2,t3,t4,t5,t6,el]);
+                            true
+                        },
+                        false => {
+                            *self =  OptHashSet::Six([t1,t2,t3,t4,t5,t6]);
                             false
                         }
                     },
@@ -122,6 +209,10 @@ impl<T: Hash + Eq> OptHashSet<T> {
             OptHashSet::None => false,
             OptHashSet::One(t) => t == value,
             OptHashSet::Two([t1,t2]) => (t1 == value)||(t2 == value),
+            OptHashSet::Three([t1,t2,t3]) => (t1 == value)||(t2 == value)||(t3 == value),
+            OptHashSet::Four([t1,t2,t3,t4]) => (t1 == value)||(t2 == value)||(t3 == value)||(t4 == value),
+            OptHashSet::Five([t1,t2,t3,t4,t5]) => (t1 == value)||(t2 == value)||(t3 == value)||(t4 == value)||(t5 == value),
+            OptHashSet::Six([t1,t2,t3,t4,t5,t6]) => (t1 == value)||(t2 == value)||(t3 == value)||(t4 == value)||(t5 == value)||(t6 == value),
             OptHashSet::Set(v) => v.contains(value),
         }
     }
@@ -138,6 +229,10 @@ pub enum IntoIter<T> {
     None,
     One(T),
     Two([T;2]),
+    Three([T; 3]),
+    Four([T; 4]),
+    Five([T; 5]),
+    Six([T; 6]),
     Set(std::collections::hash_set::IntoIter<T>),
 }
 impl<T> Iterator for IntoIter<T> {
@@ -154,9 +249,25 @@ impl<T> Iterator for IntoIter<T> {
                     IntoIter::None |
                     IntoIter::Set(_) => unreachable!(),
                     IntoIter::One(t) => Some(t),
-                    IntoIter::Two([t1, t2]) => {
+                    IntoIter::Two([q, t2]) => {
                         *self = IntoIter::One(t2);
-                        Some(t1)
+                        Some(q)
+                    },
+                    IntoIter::Three([q, t2, t3]) => {
+                        *self = IntoIter::Two([t2,t3]);
+                        Some(q)
+                    },
+                    IntoIter::Four([q, t2, t3, t4]) => {
+                        *self = IntoIter::Three([t2,t3,t4]);
+                        Some(q)
+                    },
+                    IntoIter::Five([q, t2, t3, t4, t5]) => {
+                        *self = IntoIter::Four([t2,t3,t4,t5]);
+                        Some(q)
+                    },
+                    IntoIter::Six([q, t2, t3, t4, t5, t6]) => {
+                        *self = IntoIter::Five([t2,t3,t4,t5,t6]);
+                        Some(q)
                     },
                 }
             },
@@ -174,6 +285,10 @@ impl<T: Hash + Eq> IntoIterator for OptHashSet<T> {
             OptHashSet::None => IntoIter::None,
             OptHashSet::One(t) => IntoIter::One(t),
             OptHashSet::Two(s) => IntoIter::Two(s),
+            OptHashSet::Three(s) => IntoIter::Three(s),
+            OptHashSet::Four(s) => IntoIter::Four(s),
+            OptHashSet::Five(s) => IntoIter::Five(s),
+            OptHashSet::Six(s) => IntoIter::Six(s),
             OptHashSet::Set(v) => IntoIter::Set(v.into_iter()),
         }
     }
@@ -217,6 +332,10 @@ impl<'t, T: Hash + Eq> IntoIterator for &'t OptHashSet<T> {
             OptHashSet::None => Iter::None,
             OptHashSet::One(t) => Iter::One(t),
             OptHashSet::Two(s) => Iter::Slice(s.iter()),
+            OptHashSet::Three(s) => Iter::Slice(s.iter()),
+            OptHashSet::Four(s) => Iter::Slice(s.iter()),
+            OptHashSet::Five(s) => Iter::Slice(s.iter()),
+            OptHashSet::Six(s) => Iter::Slice(s.iter()),
             OptHashSet::Set(v) => Iter::Set(v.iter()),
         }
     }
