@@ -198,6 +198,24 @@ impl<T> OptVec<T> {
             OptVec::Vec(v) => for t in v { f(t); },
         }
     }
+
+    pub fn map<Q,F>(self, func: F) -> OptVec<Q>
+    where F: Fn(T) -> Q
+    {
+        match self {
+            OptVec::None => OptVec::None,
+            OptVec::One(t) => OptVec::One(func(t)),
+            OptVec::Two(s) => {
+                let [s1,s2] = s;
+                OptVec::Two([func(s1),func(s2)])
+            },
+            OptVec::Three(s) => {
+                let [s1,s2,s3] = s;
+                OptVec::Three([func(s1),func(s2),func(s3)])
+            },
+            OptVec::Vec(v) => OptVec::Vec(v.into_iter().map(|t| func(t)).collect()),
+        }
+    }
 }
 
 
